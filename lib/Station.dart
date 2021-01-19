@@ -1,7 +1,7 @@
 class Station{
   String name;
   int id;
-
+  static int actualStationId;
   Station({this.name, this.id});
 
   static List<Station> fromJson(List<dynamic> lista){

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:jakosc_powietrza/LoadingScreen.dart';
+import 'package:jakosc_powietrza/ShowContamination.dart';
 import 'package:jakosc_powietrza/Station.dart';
 import 'dart:convert';
 
@@ -14,6 +15,7 @@ class _MainScreenState extends State<MainScreen> {
   List<Station> listOfStationFirst = new List();
   List<Station> listOfStationAfterSort = new List();
   bool isLoaded=false;
+  String searchTerm='';
 
   @override
   Widget build(BuildContext context) {
@@ -43,15 +45,43 @@ class _MainScreenState extends State<MainScreen> {
                   ),
                 ),
                 textAlign: TextAlign.center,
+
                 onChanged: (val) => setState((){
+
                   List<Station> newList = new List();
-                  for(Station station in listOfStationFirst){
-                    if(station.name.contains(val)){
-                      newList.add(station);
+                  if(val.substring(0,val.length-1)==searchTerm){
+                    for (Station station in listOfStationAfterSort) {
+
+                      String namePom = replaceSpecialChar(station.name
+                          .toLowerCase());
+
+                      String valPom = replaceSpecialChar(val.toLowerCase());
+
+                      if (namePom.contains(valPom)) {
+                        newList.add(station);
+                      }
+
                     }
                   }
+                  else {
+                    for (Station station in listOfStationFirst) {
+
+                      String namePom = replaceSpecialChar(station.name
+                          .toLowerCase());
+
+                      String valPom = replaceSpecialChar(val.toLowerCase());
+
+                      if (namePom.contains(valPom)) {
+                        newList.add(station);
+                      }
+
+                    }
+                  }
+                  searchTerm=val;
                   listOfStationAfterSort=newList;
+
                 }),
+
               ),
 
               !isLoaded?FutureBuilder<List<Station>>(
@@ -78,11 +108,37 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 
+  String replaceSpecialChar(String toReplace){
+    toReplace=toReplace.replaceAll("ę", "e");
+    toReplace=toReplace.replaceAll("ą", "a");
+    toReplace=toReplace.replaceAll("ó", "o");
+    toReplace=toReplace.replaceAll("ł", "l");
+    toReplace=toReplace.replaceAll("ś", "s");
+    toReplace=toReplace.replaceAll("ć", "c");
+    toReplace=toReplace.replaceAll("ń", "n");
+    toReplace=toReplace.replaceAll("ż", "z");
+    toReplace=toReplace.replaceAll("ź", "z");
+    return toReplace;
+  }
+
   Widget ListOfStationWidget(){
     return ListView(physics: NeverScrollableScrollPhysics(), shrinkWrap: true, scrollDirection: Axis.vertical,
         children: listOfStationAfterSort.map((station) {
           return RaisedButton(
-            child: Text(station.name),
+            color: Colors.blueGrey[700],
+            child: Padding(
+              padding: EdgeInsets.symmetric(vertical: 10),
+              child:Text(station.name,style: TextStyle(fontSize: 18))
+            ),
+            onPressed: (){
+
+              Station.actualStationId=station.id;
+              Navigator.push(context, PageRouteBuilder(
+                pageBuilder: (_, __, ___) => ShowContamination(),
+                transitionDuration: Duration(seconds: 0),
+              ));
+
+            },
           );
         }).toList());
   }
